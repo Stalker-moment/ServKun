@@ -4,7 +4,7 @@ import React from "react";
 import 'leaflet/dist/leaflet.css';
 import '@react-pdf-viewer/core/lib/styles/index.css';
 import '@react-pdf-viewer/default-layout/lib/styles/index.css';
-import DragMp from '@/components/Home/DragMp';
+import DragMp from '@/components/Home/SystemInfo';
 
 export const metadata: Metadata = {
   title:

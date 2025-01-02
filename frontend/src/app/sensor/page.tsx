@@ -1,24 +1,24 @@
 import Breadcrumb from "@/components/Breadcrumbs/Breadcrumb";
-import DragMp from '@/components/Home/SystemInfo';
+import TableSensor from "@/components/Tables/TableSensor";
 import { Metadata } from "next";
 import DefaultLayout from "@/components/Layouts/DefaultLaout";
 import Cookies from "js-cookie";
 
 export const metadata: Metadata = {
-  title: "Next.js Tables Page | NextAdmin - Next.js Dashboard Kit",
-  description: "This is Next.js Tables page for NextAdmin Dashboard Kit",
+  title: "Sensor management | ServKun",
+  description: "Dashboard for managing sensors",
 };
 
-const Henkaten = () => {
+const TablesPage = () => {
   return (
     <DefaultLayout>
-      <Breadcrumb pageName="Henkaten" />
+      <Breadcrumb pageName="Sensor" />
 
       <div className="flex flex-col gap-10">
-        <DragMp />
+        <TableSensor />
       </div>
     </DefaultLayout>
   );
 };
 
-export default Henkaten;
+export default TablesPage;

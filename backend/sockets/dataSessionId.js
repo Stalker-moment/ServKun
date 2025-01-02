@@ -20,7 +20,7 @@ async function handleDataSessionId(ws, req) {
     try {
         const decoded = verify(token, process.env.JWT_SECRET);
 
-        if(decoded.expired < Date.now()) {
+        if(decoded.expiredAt < Date.now()) {
             ws.send(JSON.stringify({ error: "Invalid or expired token" }));
             ws.close();
             return;
