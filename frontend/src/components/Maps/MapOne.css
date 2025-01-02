@@ -1,0 +1,40 @@
+/* MapOne.css */
+
+/* Gaya untuk kontrol kustom Leaflet */
+.leaflet-control-custom {
+    background: transparent;
+  }
+  
+  .leaflet-control-custom:hover {
+    background-color: #f4f4f4;
+  }
+  
+  /* Mengatur ukuran dan posisi ikon marker jika diperlukan */
+  .leaflet-marker-icon {
+    /* Contoh: menyesuaikan ukuran marker */
+    width: 25px;
+    height: 41px;
+  }
+  
+  /* Optional: Menyesuaikan tampilan popup */
+  .popup-content {
+    font-family: 'Arial', sans-serif;
+    position: relative;
+  }
+  
+  /* Gaya tambahan untuk tombol dan kontrol opacity */
+  .toggle-button {
+    /* Tambahkan styling tambahan jika diperlukan */
+  }
+  
+  /* Styling untuk tombol close di popup */
+  .popup-content button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  

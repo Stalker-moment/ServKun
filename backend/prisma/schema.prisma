@@ -1,0 +1,134 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Account {
+  id        String   @id @default(uuid()) // Using UUID for a standard GUID
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  contact   Contact?
+
+  notification notification[]
+  sessions     Session[]
+}
+
+model Contact {
+  id        String   @id @default(uuid()) // Assuming UUID for a unique identifier
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  picture   String   @default("/default.png")
+  account   Account  @relation(fields: [id], references: [id])
+}
+
+model Session {
+  id             String     @id @default(uuid())
+  token          String     @unique
+  accountId      String
+  expiredAt      DateTime
+  device         DeviceList @default(MOBILE)
+  ip             String
+  region         String
+  city           String
+  loc            String
+  org            String
+  timezone       String
+  account        Account    @relation(fields: [accountId], references: [id])
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  lastAccessedAt DateTime   @default(now())
+}
+
+model notification {
+  id        String           @id @default(uuid())
+  title     String
+  message   String
+  type      TypeNotification @default(BASIC)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+  accountId String
+  account   Account          @relation(fields: [accountId], references: [id])
+}
+
+model SystemInfo {
+  id              Int       @id @default(autoincrement())
+  manufacturer    String
+  model           String
+  cpuBrand        String
+  cpuManufacturer String
+  cpuSpeed        Float
+  cpuCores        Int
+  cpuTemperature  Float?
+  totalRAM        Float
+  usedRAM         Float
+  batteryLevel    Float?
+  batteryVoltage  Float?
+  isCharging      Boolean
+  disks           Disk[]
+  gpus            Gpu[]
+  networks        Network[]
+  createdAt       DateTime  @default(now())
+}
+
+model Disk {
+  id           Int        @id @default(autoincrement())
+  name         String
+  size         Float
+  systemInfoId Int
+  systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+}
+
+model Gpu {
+  id           Int        @id @default(autoincrement())
+  vendor       String
+  model        String
+  temperature  Float?
+  systemInfoId Int
+  systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+}
+
+model Network {
+  id           Int        @id @default(autoincrement())
+  interface    String
+  rxSpeed      Float // Download speed in KB/s
+  txSpeed      Float // Upload speed in KB/s
+  systemInfoId Int
+  systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum DeviceList {
+  MOBILE
+  TABLET
+  DESKTOP
+  UNKNOWN
+}
+
+enum TypeNotification {
+  BASIC
+  INFO
+  WARNING
+  ERROR
+}

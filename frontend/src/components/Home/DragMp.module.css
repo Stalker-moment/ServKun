@@ -1,0 +1,70 @@
+/* components/DragMp.module.css */
+
+.containerWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9; /* Sesuaikan dengan rasio aspek background Anda */
+  background-size: cover; /* Memastikan background menutupi seluruh container */
+  background-position: center; /* Memusatkan background */
+  background-repeat: no-repeat; /* Mencegah pengulangan background */
+  overflow: hidden; /* Mencegah gambar keluar dari container */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
+
+.draggableImageContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  cursor: grab; /* Mengubah kursor saat hover */
+  z-index: 10; /* Memastikan container draggable berada di atas background */
+  width: 10%; /* Sesuaikan sesuai kebutuhan */
+  gap: 0.1rem; /* Menambahkan jarak antar elemen */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
+
+.draggableImageWrapper {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform: scale(0.3); /* Sesuaikan dengan ukuran gambar yang diinginkan */
+  aspect-ratio: 4 / 7; /* Sesuaikan dengan rasio aspek gambar */
+  margin-bottom: 0.1rem; /* Kurangi dari 0.2rem */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
+
+.draggableImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover; /* Menjaga rasio gambar */
+  user-select: none; /* Mencegah pemilihan gambar */
+  border-radius: 2px; /* Membulatkan sudut jika diinginkan */
+  margin-bottom: 0.01rem; /* Kurangi dari 0.05rem atau hapus jika perlu */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
+
+.textContainer {
+  text-align: center;
+  color: #2c2727; /* Sesuaikan warna teks sesuai kebutuhan */
+  font-size: 0.7rem; /* Sesuaikan ukuran font */
+  padding-top: 0; /* Hapus padding-top atau set ke 0 */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
+
+.textContainer .name {
+  font-weight: bold;
+  margin-bottom: 0.05rem; /* Kurangi dari 0.05rem atau set ke 0 */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
+
+.textContainer .noreg {
+  font-style: italic;
+  margin-bottom: 0; /* Kurangi dari 0.05rem atau set ke 0 */
+  border: none !important; /* Menghapus border jika ada */
+  box-shadow: none !important; /* Menghapus box-shadow jika ada */
+}
