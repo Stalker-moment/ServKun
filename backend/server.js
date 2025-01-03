@@ -26,6 +26,7 @@ import notification from "./controllers/internal/notification.js";
 
 import sensorManagement from "./controllers/IoT/sensorManagement.js";
 import coolerManagement from "./controllers/IoT/coolerManagement.js";
+import toDevice from "./controllers/IoT/toDevice.js";
 
 import handleDataAccountsSocket from "./sockets/dataAccounts.js";
 import handleDataSessionId from "./sockets/dataSessionId.js";
@@ -33,6 +34,8 @@ import handleDataSessionAccount from "./sockets/dataSessionAccount.js";
 import handleDataSystemLatest from "./sockets/dataSystemLatest.js";
 import handleDataSensor from "./sockets/dataSensor.js";
 import handleDataCooler from "./sockets/dataCooler.js";
+import handleDataSensorLatest from "./sockets/dataSensorLatest.js";
+import handleDataCoolerLatest from "./sockets/dataCoolerLatest.js";
 
 // Import Function
 import getAndSaveAllSystemInfo from "./functions/getSystems.js";
@@ -78,6 +81,7 @@ app.use("/files", filesProfile);
 //===============[IoT Routes]=================//
 app.use("/api/sensor", sensorManagement);
 app.use("/api/cooler", coolerManagement);
+app.use("/api/device", toDevice);
 
 // Handler jika route tidak ditemukan
 app.use((req, res) => {
@@ -98,10 +102,14 @@ wss.on("connection", (ws, req) => {
     handleDataSessionAccount(ws, req);
   } else if (req.url.startsWith("/dataSystemLatest")) {
     handleDataSystemLatest(ws, req);
-  } else if(req.url.startsWith("/dataSensor")) {
+  } else if (req.url.startsWith("/dataSensor")) {
     handleDataSensor(ws, req);
-  } else if(req.url.startsWith("/dataCooler")) {
+  } else if (req.url.startsWith("/dataCooler")) {
     handleDataCooler(ws, req);
+  } else if (req.url.startsWith("/dataSensorLatest")) {
+    handleDataSensorLatest(ws, req);
+  } else if (req.url.startsWith("/dataCoolerLatest")) {
+    handleDataCoolerLatest(ws, req);
   } else {
     ws.send(JSON.stringify({ error: "Invalid request URL" }));
     ws.close();
