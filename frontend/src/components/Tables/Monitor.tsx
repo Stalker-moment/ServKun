@@ -1,14 +1,15 @@
 // pages/monitor.tsx
-"use client"; // Menandai komponen sebagai Client Component
+"use client";
 
 import React, { useEffect, useState, ChangeEvent } from "react";
 import Cookies from "js-cookie";
 import { FiCopy } from "react-icons/fi";
 import { BsFillGearFill } from "react-icons/bs";
-import CoolerAnimation from "./CoolerAnimation";
-import useDebounce from "@/hooks/useDebounce";
+import CoolerAnimation from "./CoolerAnimation";// Pastikan path sesuai
+import CoolerChart from "../Charts/CoolerChart"; // Pastikan path sesuai
+import useDebounce from "@/hooks/useDebounce"; // Pastikan path sesuai
 
-const HTTPSAPIURL = process.env.NEXT_PUBLIC_HTTPS_API_URL;
+const HTTPSAPIURL = process.env.NEXT_PUBLIC_HTTPS_API_URL || "localhost:3000"; // Ganti dengan URL API Anda
 
 // Definisikan tipe data yang diterima dari WebSocket
 interface SensorData {
@@ -101,17 +102,17 @@ const Monitor: React.FC = () => {
   };
 
   // Koneksi WebSocket untuk Sensor
-  useEffect(() => {
+useEffect(() => {
     if (!token) {
       setSensorError("Token autentikasi tidak ditemukan.");
       setSensorLoading(false);
       return;
     }
-
+  
     const wsUrl = `wss://${HTTPSAPIURL}/dataSensorLatest?token=${token}`;
     console.log(`Menghubungkan ke WebSocket Sensor di URL: ${wsUrl}`);
     const ws = new WebSocket(wsUrl);
-
+  
     // Timeout jika tidak ada data dalam 30 detik
     const timeoutId = setTimeout(() => {
       if (sensorLoading) {
@@ -120,12 +121,12 @@ const Monitor: React.FC = () => {
         ws.close();
       }
     }, 30000); // 30 detik
-
+  
     ws.onopen = () => {
       console.log("WebSocket Sensor Terhubung.");
       setSensorWsStatus("Terhubung");
     };
-
+  
     ws.onmessage = (event) => {
       console.log("Menerima data dari WebSocket Sensor:", event.data);
       try {
@@ -140,26 +141,26 @@ const Monitor: React.FC = () => {
         clearTimeout(timeoutId);
       }
     };
-
+  
     // ws.onerror = (event) => {
     //   console.error("WebSocket Sensor Error:", event);
     //   setSensorError("Terjadi kesalahan pada koneksi WebSocket Sensor.");
     //   setSensorLoading(false);
     //   ws.close();
     // };
-
+  
     // ws.onclose = (event) => {
     //   console.log("WebSocket Sensor Ditutup:", event.reason);
     //   setSensorWsStatus("Terputus");
     // };
-
+  
     return () => {
       console.log("Menutup koneksi WebSocket Sensor.");
       ws.close();
       clearTimeout(timeoutId);
     };
   }, [token, HTTPSAPIURL, sensorLoading]);
-
+  
   // Koneksi WebSocket untuk Cooler
   useEffect(() => {
     if (!token) {
@@ -167,11 +168,11 @@ const Monitor: React.FC = () => {
       setCoolerLoading(false);
       return;
     }
-
+  
     const wsUrl = `wss://${HTTPSAPIURL}/dataCoolerLatest?token=${token}`;
     console.log(`Menghubungkan ke WebSocket Cooler di URL: ${wsUrl}`);
     const ws = new WebSocket(wsUrl);
-
+  
     // Timeout jika tidak ada data dalam 30 detik
     const timeoutId = setTimeout(() => {
       if (coolerLoading) {
@@ -180,12 +181,12 @@ const Monitor: React.FC = () => {
         ws.close();
       }
     }, 30000); // 30 detik
-
+  
     ws.onopen = () => {
       console.log("WebSocket Cooler Terhubung.");
       setCoolerWsStatus("Terhubung");
     };
-
+  
     ws.onmessage = (event) => {
       console.log("Menerima data dari WebSocket Cooler:", event.data);
       try {
@@ -200,19 +201,19 @@ const Monitor: React.FC = () => {
         clearTimeout(timeoutId);
       }
     };
-
+  
     // ws.onerror = (event) => {
     //   console.error("WebSocket Cooler Error:", event);
     //   setCoolerError("Terjadi kesalahan pada koneksi WebSocket Cooler.");
     //   setCoolerLoading(false);
     //   ws.close();
     // };
-
+  
     // ws.onclose = (event) => {
     //   console.log("WebSocket Cooler Ditutup:", event.reason);
     //   setCoolerWsStatus("Terputus");
     // };
-
+  
     return () => {
       console.log("Menutup koneksi WebSocket Cooler.");
       ws.close();
@@ -340,7 +341,10 @@ const Monitor: React.FC = () => {
 
   // useEffect untuk mengirim permintaan API setelah speed di-debounce
   useEffect(() => {
-    if (coolerToChangeSpeed && debouncedSpeed !== (coolerToChangeSpeed.latestData?.speed || 0)) {
+    if (
+      coolerToChangeSpeed &&
+      debouncedSpeed !== (coolerToChangeSpeed.latestData?.speed || 0)
+    ) {
       sendSpeedUpdate(coolerToChangeSpeed.id, debouncedSpeed);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -568,6 +572,12 @@ const Monitor: React.FC = () => {
                   {/* Animasi Cooler */}
                   <CoolerAnimation speed={cooler.latestData?.speed || 0} />
                 </div>
+
+                {/* Tambahkan CoolerChart dengan prop isDarkMode */}
+                {cooler.latestData && (
+                  <CoolerChart coolerId={cooler.id} token={token || ""} />
+                )}
+
                 <div className="mt-4 flex justify-between">
                   <button
                     onClick={() => openChangeModeModal(cooler)}
@@ -703,7 +713,7 @@ const Monitor: React.FC = () => {
         >
           <div
             className="w-full max-w-md rounded-lg bg-white dark:bg-gray-800 p-6 shadow-lg transition-colors duration-300"
-            onClick={(e) => e.stopPropagation()}
+            onClick={(e) => e.stopPropagation()} // Mencegah klik di dalam modal menutup modal
           >
             <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
               Ubah Speed Cooler

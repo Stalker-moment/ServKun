@@ -155,7 +155,7 @@ router.put("/changeSpeed", authenticateJWT, async (req, res) => {
 });
 
 // Route untuk menambahkan data cooler
-router.get("/data", async (req, res) => {
+router.post("/data", async (req, res) => {
   const { coolerId, mode, speed, apikey } = req.body;
 
   if (!apikey) {
@@ -240,15 +240,15 @@ router.put("/edit", authenticateJWT, async (req, res) => {
 
 // Route untuk menghapus cooler
 router.delete("/delete", authenticateJWT, async (req, res) => {
-  const { id } = req.body;
+  const { coolerId } = req.body;
 
-  if (!id) {
-    return res.status(400).json({ error: "Please provide the cooler ID" });
+  if (!coolerId) {
+    return res.status(400).json({ error: "Please provide the coolerId" });
   }
 
   try {
     const cooler = await prisma.cooler.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(coolerId) },
     });
 
     if (!cooler) {
@@ -257,7 +257,7 @@ router.delete("/delete", authenticateJWT, async (req, res) => {
 
     // Hapus cooler (Cascade delete akan menghapus coolerData terkait)
     await prisma.cooler.delete({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(coolerId) },
     });
 
     return res.status(200).json({ message: "Cooler deleted successfully" });

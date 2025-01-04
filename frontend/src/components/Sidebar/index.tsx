@@ -9,6 +9,9 @@ import SidebarItem from "@/components/Sidebar/SidebarItem";
 import { FaObjectGroup } from "react-icons/fa6";
 import ClickOutside from "@/components/ClickOutside";
 import { PiChalkboardTeacher } from "react-icons/pi";
+import { BsFan } from "react-icons/bs";
+import { MdOutlineSensors } from "react-icons/md";
+import { FcElectricalSensor } from "react-icons/fc";
 import { FaClipboardList } from "react-icons/fa";
 import { LiaCarCrashSolid } from "react-icons/lia";
 import {
@@ -33,39 +36,27 @@ const menuGroups = [
     menuItems: [
       {
         icon: <MdOutlineSpaceDashboard size={24} />,
-        label: "HenkaTen Board",
+        label: "System",
         route: "/",
         isAdmin: false,
       },
       {
-        icon: <MdOutlineDeveloperBoard style={{ fontSize: "24px" }} />,
-        label: "SGA Board",
-        route: "/sga",
-        isAdmin: false,
+        icon: <FcElectricalSensor style={{ fontSize: "24px" }} />,
+        label: "Monitoring",
+        route: "/monitoring",
+        isAdmin: true,
       },
       {
-        icon: <FaObjectGroup style={{ fontSize: "24px" }} />,
-        label: "GL Management Board",
-        route: "/glmb",
-        isAdmin: false,
+        icon: <BsFan style={{ fontSize: "24px" }} />,
+        label: "Cooler Management",
+        route: "/cooler",
+        isAdmin: true,
       },
       {
-        icon: <PiChalkboardTeacher style={{ fontSize: "24px" }} />,
-        label: "TPM Control Board",
-        route: "/tpm", // Pastikan route yang benar
-        isAdmin: false,
-      },
-      {
-        icon: <FaClipboardList style={{ fontSize: "24px" }} />,
-        label: "Gentani Board",
-        route: "/gentani", // Pastikan route yang benar
-        isAdmin: false,
-      },
-      {
-        icon: <LiaCarCrashSolid style={{ fontSize: "24px" }} />,
-        label: "Defect Operator",
-        route: "/defect-operator", // Pastikan route yang benar
-        isAdmin: false,
+        icon: <MdOutlineSensors style={{ fontSize: "24px" }} />,
+        label: "Sensor Management",
+        route: "/sensor", // Pastikan route yang benar
+        isAdmin: true,
       },
     ],
   },

@@ -276,7 +276,7 @@ const TableCooler: React.FC = () => {
         return;
       }
 
-      const response = await fetch(`https://${HTTPSAPIURL}/api/cooler/edit`, {
+      const response = await fetch(`https://${HTTPSAPIURL}/api/cooler/delete`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",

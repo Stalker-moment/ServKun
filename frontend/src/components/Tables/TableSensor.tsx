@@ -270,7 +270,7 @@ const TableSensor: React.FC = () => {
       }
 
       const response = await fetch(
-        `https://${HTTPSAPIURL}/api/sensor/edit`,
+        `https://${HTTPSAPIURL}/api/sensor/delete`,
         {
           method: "DELETE",
           headers: {

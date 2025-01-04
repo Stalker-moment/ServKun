@@ -36,6 +36,7 @@ import handleDataSensor from "./sockets/dataSensor.js";
 import handleDataCooler from "./sockets/dataCooler.js";
 import handleDataSensorLatest from "./sockets/dataSensorLatest.js";
 import handleDataCoolerLatest from "./sockets/dataCoolerLatest.js";
+import handleDataCoolerChart from "./sockets/dataCoolerChart.js";
 
 // Import Function
 import getAndSaveAllSystemInfo from "./functions/getSystems.js";
@@ -94,23 +95,30 @@ const wss = new WebSocketServer({ server }); // Perubahan di sini
 
 // Setup WebSocket connections
 wss.on("connection", (ws, req) => {
-  if (req.url.startsWith("/accounts")) {
-    handleDataAccountsSocket(ws, req);
-  } else if (req.url.startsWith("/dataSessionId")) {
-    handleDataSessionId(ws, req);
-  } else if (req.url.startsWith("/dataSessionAccount")) {
-    handleDataSessionAccount(ws, req);
-  } else if (req.url.startsWith("/dataSystemLatest")) {
-    handleDataSystemLatest(ws, req);
-  } else if (req.url.startsWith("/dataSensor")) {
-    handleDataSensor(ws, req);
-  } else if (req.url.startsWith("/dataCooler")) {
-    handleDataCooler(ws, req);
-  } else if (req.url.startsWith("/dataSensorLatest")) {
-    handleDataSensorLatest(ws, req);
-  } else if (req.url.startsWith("/dataCoolerLatest")) {
-    handleDataCoolerLatest(ws, req);
+  // Map of URL patterns to handlers
+  const routes = {
+    "/accounts": handleDataAccountsSocket,
+    "/dataSessionId": handleDataSessionId,
+    "/dataSessionAccount": handleDataSessionAccount,
+    "/dataSystemLatest": handleDataSystemLatest,
+    "/dataSensor": handleDataSensor,
+    "/dataCooler": handleDataCooler,
+    "/dataSensorLatest": handleDataSensorLatest,
+    "/dataCoolerLatest": handleDataCoolerLatest,
+    "/ChartCooler": handleDataCoolerChart,
+  };
+
+  // Loop through routes and check if the request URL matches
+  const matchedRoute = Object.keys(routes).find((route) =>
+    req.url.startsWith(route)
+  );
+
+  if (matchedRoute) {
+    // If a match is found, call the respective handler function
+    console.log(`Connected to ${matchedRoute}`);
+    routes[matchedRoute](ws, req);
   } else {
+    // If no match is found, send an error message
     ws.send(JSON.stringify({ error: "Invalid request URL" }));
     ws.close();
   }
