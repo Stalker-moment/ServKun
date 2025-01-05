@@ -105,6 +105,7 @@ model Disk {
   free         Float
   systemInfoId Int
   systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 }
 
 model Gpu {
@@ -116,6 +117,7 @@ model Gpu {
   memory       Float?
   systemInfoId Int
   systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 }
 
 model Network {
@@ -127,6 +129,7 @@ model Network {
   txSpeed      Float // Upload speed in KB/s
   systemInfoId Int
   systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 }
 
 model Process {
@@ -137,6 +140,7 @@ model Process {
   cpuUsage     Float
   systemInfoId Int
   systemInfo   SystemInfo @relation(fields: [systemInfoId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
 }
 
 model Cooler {

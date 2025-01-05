@@ -48,6 +48,13 @@ async function getAndSaveAllSystemInfo() {
       fsSize.map((fs) => fs.fs)
     );
 
+    // Pastikan jumlah diskLayout dan fsSize sama
+    if (diskLayout.length !== fsSize.length) {
+      console.warn(
+        `Jumlah diskLayout (${diskLayout.length}) dan fsSize (${fsSize.length}) tidak sama. Mapping akan dilakukan berdasarkan indeks yang tersedia.`
+      );
+    }
+
     // Save system info to the database
     const systemInfo = await prisma.systemInfo.create({
       data: {
@@ -71,27 +78,20 @@ async function getAndSaveAllSystemInfo() {
         batteryVoltage: battery.voltage || null,
         isCharging: battery.isCharging,
         disks: {
-          create: diskLayout.map((disk) => {
-            // Find matching file system by name or heuristic
-            const fs = fsSize.find(
-              (fs) =>
-                fs.fs.toLowerCase().includes(disk.name.toLowerCase()) ||
-                disk.name.toLowerCase().includes(fs.fs.toLowerCase())
-            );
+          create: diskLayout.map((disk, index) => {
+            const fs = fsSize[index]; // Mapping berdasarkan indeks
 
-            // Debugging: Log if no match is found
+            // Debugging: Log jika fs tidak tersedia untuk indeks tertentu
             if (!fs) {
-              console.warn(`No matching file system for disk: ${disk.name}`);
+              console.warn(`Tidak ada file system yang cocok untuk disk: ${disk.name} pada indeks ${index}`);
             }
 
             return {
               name: disk.name,
-              size: parseFloat((disk.size / 1e9).toFixed(2)),
+              size: parseFloat((disk.size / 1e9).toFixed(2)), // Ukuran dalam GB
               type: disk.type || null,
-              used: fs ? parseFloat((fs.used / 1e9).toFixed(2)) : 0,
-              free: fs
-                ? parseFloat((fs.size / 1e9 - fs.used / 1e9).toFixed(2))
-                : 0,
+              used: fs ? parseFloat((fs.used / 1e9).toFixed(2)) : 0, // Penggunaan dalam GB
+              free: fs ? parseFloat((fs.available / 1e9).toFixed(2)) : 0, // Sisa ruang dalam GB
             };
           }),
         },

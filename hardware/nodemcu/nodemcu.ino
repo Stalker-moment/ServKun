@@ -13,14 +13,14 @@
 
 DHT dht(DHTPIN, DHTTYPE);
 
-const char* ssid = "Sinyo Home";      // Ganti dengan SSID WiFi Anda
-const char* password = "Tier010707";  // Ganti dengan password WiFi Anda
+const char* ssid = "TierKun_IoT";      // Ganti dengan SSID WiFi Anda
+const char* password = "01072007";  // Ganti dengan password WiFi Anda
 
 //DEFINE VARIABLE
 int CoolerId = 1;
 int SensorId = 1;
-int defaultSpeed = 50;
-int lastSpeed = 50;
+int defaultSpeed = 100;
+int lastSpeed = 100;
 int systemTemperature = 40;
 int minimalTemperature = 40;
 int maximalTemperature = 100;
@@ -142,7 +142,6 @@ void updateCooler(int speed, String mode) {
       Serial.print("HTTP request failed with error code: ");
       Serial.println(http.errorToString(httpCode).c_str());
       APIHealt = "No";
-      lastMode = "DEFAULT";
     }
 
     http.end();
@@ -197,7 +196,6 @@ void getMode() {
       Serial.print("HTTP request failed with error code: ");
       Serial.println(http.errorToString(httpCode).c_str());
       APIHealt = "No";
-      lastMode = "DEFAULT";
     }
 
     http.end();
@@ -251,7 +249,6 @@ void getSystem() {
       Serial.print("HTTP request failed with error code: ");
       Serial.println(http.errorToString(httpCode).c_str());
       APIHealt = "No";
-      lastMode = "DEFAULT";
     }
 
     http.end();
