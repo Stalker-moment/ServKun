@@ -14,6 +14,7 @@ import { MdOutlineSensors } from "react-icons/md";
 import { FcElectricalSensor } from "react-icons/fc";
 import { FaClipboardList } from "react-icons/fa";
 import { LiaCarCrashSolid } from "react-icons/lia";
+import { VscServerProcess } from "react-icons/vsc";
 import {
   MdOutlineSupervisorAccount,
   MdOutlineDeveloperBoard,
@@ -56,6 +57,17 @@ const menuGroups = [
         icon: <MdOutlineSensors style={{ fontSize: "24px" }} />,
         label: "Sensor Management",
         route: "/sensor", // Pastikan route yang benar
+        isAdmin: true,
+      },
+    ],
+  },
+  {
+    name: "SYSTEM",
+    menuItems: [
+      {
+        icon: <VscServerProcess size={24} />,
+        label: "Process",
+        route: "/process",
         isAdmin: true,
       },
     ],
