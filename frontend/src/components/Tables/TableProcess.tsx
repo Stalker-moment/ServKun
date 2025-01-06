@@ -1,11 +1,13 @@
-// components/TableProcess.tsx
 "use client"; // Menandai komponen sebagai Client Component
 
 import React, { useEffect, useState, ChangeEvent, FormEvent } from "react";
 import Cookies from "js-cookie";
 import { FiEye } from "react-icons/fi";
+import { Chart as ChartJS, LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 
-const HTTPSAPIURL = process.env.NEXT_PUBLIC_HTTPS_API_URL;
+// Registrasi elemen Chart.js
+ChartJS.register(LineElement, PointElement, LinearScale, CategoryScale, Tooltip, Legend);
 
 // Definisikan tipe data yang diterima dari WebSocket
 interface ProcessData {
@@ -18,7 +20,16 @@ interface ProcessData {
   createdAt: string; // Akan ditampilkan sebagai dataRefresh
 }
 
-const TableProcess: React.FC = () => {
+// Definisikan tipe data chart
+interface ChartData {
+  TimeChart: string[];
+  CPUUsage: number[];
+  Memory: number[];
+}
+
+const HTTPSAPIURL = process.env.NEXT_PUBLIC_HTTPS_API_URL;
+
+const ProcessChart: React.FC = () => {
   const [processes, setProcesses] = useState<ProcessData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -30,6 +41,9 @@ const TableProcess: React.FC = () => {
   // State untuk modal detail proses
   const [isDetailModalOpen, setIsDetailModalOpen] = useState<boolean>(false);
   const [processToDetail, setProcessToDetail] = useState<ProcessData | null>(null);
+  const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [chartLoading, setChartLoading] = useState<boolean>(false);
+  const [chartError, setChartError] = useState<string | null>(null);
 
   useEffect(() => {
     // Membuat URL WebSocket dengan token dan keyword
@@ -141,12 +155,74 @@ const TableProcess: React.FC = () => {
   const openDetailModal = (process: ProcessData) => {
     setProcessToDetail(process);
     setIsDetailModalOpen(true);
+    fetchChartData(process.name);
   };
 
   // Handler untuk menutup modal detail proses
   const closeDetailModal = () => {
     setIsDetailModalOpen(false);
     setProcessToDetail(null);
+    setChartData(null);
+    setChartError(null);
+  };
+
+  // Fungsi untuk mengambil data chart melalui WebSocket
+  const fetchChartData = (processName: string) => {
+    const token = Cookies.get("userAuth");
+    if (!token) {
+      setChartError("Token autentikasi tidak ditemukan.");
+      return;
+    }
+
+    setChartLoading(true);
+    setChartError(null);
+
+    const chartWsUrl = `wss://${HTTPSAPIURL}/ChartProcess?token=${token}&name=${encodeURIComponent(processName)}`;
+    console.log(`Menghubungkan ke WebSocket Chart di URL: ${chartWsUrl}`);
+    const chartWs = new WebSocket(chartWsUrl);
+
+    // Timer untuk timeout jika data tidak diterima dalam 30 detik
+    const chartTimeoutId = setTimeout(() => {
+      if (chartLoading) {
+        setChartError("Timeout: Tidak ada data yang diterima dari WebSocket Chart.");
+        setChartLoading(false);
+        chartWs.close();
+      }
+    }, 30000); // 30 detik
+
+    chartWs.onopen = () => {
+      console.log("WebSocket Chart connection opened.");
+      // Jika server memerlukan pesan inisialisasi atau langganan, kirim di sini
+    };
+
+    chartWs.onmessage = (event) => {
+      console.log("Menerima data dari WebSocket Chart:", event.data);
+      try {
+        const parsedChartData = JSON.parse(event.data) as ChartData;
+        console.log("Data chart yang diparse:", parsedChartData);
+        setChartData(parsedChartData);
+        setChartLoading(false);
+        clearTimeout(chartTimeoutId); // Data diterima, batalkan timeout
+        chartWs.close(); // Tutup WebSocket setelah menerima data
+      } catch (err) {
+        console.error("Error parsing WebSocket Chart message:", err);
+        setChartError("Gagal memuat data chart.");
+        setChartLoading(false);
+        clearTimeout(chartTimeoutId); // Kesalahan parsing, batalkan timeout
+        chartWs.close();
+      }
+    };
+
+    // chartWs.onerror = (event) => {
+    //   console.error("WebSocket Chart error:", event);
+    //   setChartError("Terjadi kesalahan pada koneksi WebSocket Chart.");
+    //   setChartLoading(false);
+    //   chartWs.close();
+    // };
+
+    // chartWs.onclose = (event) => {
+    //   console.log("WebSocket Chart connection closed:", event.reason);
+    // };
   };
 
   return (
@@ -184,16 +260,13 @@ const TableProcess: React.FC = () => {
           onClick={closeDetailModal} // Menutup modal saat klik backdrop
         >
           <div
-            className="w-full max-w-md rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800"
+            className="w-full max-w-2xl rounded-lg bg-white p-6 shadow-lg dark:bg-gray-800"
             onClick={(e) => e.stopPropagation()} // Mencegah klik di dalam modal menutup modal
           >
-            <h2 className="mb-4 text-xl font-semibold text-gray-800 dark:text-gray-200">
+            <h2 className="mb-4 text-2xl font-semibold text-gray-800 dark:text-gray-200">
               Detail Proses
             </h2>
-            <div className="mb-4">
-              {/* <p className="text-gray-700 dark:text-gray-300">
-                <strong>ID Proses:</strong> {processToDetail.id}
-              </p> */}
+            <div className="mb-6">
               <p className="text-gray-700 dark:text-gray-300">
                 <strong>Nama Proses:</strong> {processToDetail.name}
               </p>
@@ -211,6 +284,79 @@ const TableProcess: React.FC = () => {
                 {new Date(processToDetail.createdAt).toLocaleString()}
               </p>
             </div>
+
+            {/* Bagian Chart */}
+            <div className="mb-6">
+              <h3 className="mb-2 text-xl font-semibold text-gray-800 dark:text-gray-200">
+                Grafik Penggunaan CPU dan Memori
+              </h3>
+              {chartLoading && (
+                <div className="flex items-center justify-center p-4">
+                  <p className="text-gray-500 dark:text-gray-300">Memuat grafik...</p>
+                </div>
+              )}
+              {chartError && (
+                <div className="flex items-center justify-center p-4">
+                  <p className="text-red-500">{chartError}</p>
+                </div>
+              )}
+              {chartData && (
+                <Line
+                  data={{
+                    labels: chartData.TimeChart,
+                    datasets: [
+                      {
+                        label: 'CPU Usage (%)',
+                        data: chartData.CPUUsage,
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.4,
+                      },
+                      {
+                        label: 'Memory (MB)',
+                        data: chartData.Memory,
+                        borderColor: 'rgba(153, 102, 255, 1)',
+                        backgroundColor: 'rgba(153, 102, 255, 0.2)',
+                        tension: 0.4,
+                      },
+                    ],
+                  }}
+                  options={{
+                    responsive: true,
+                    plugins: {
+                      legend: {
+                        position: 'top' as const,
+                      },
+                      tooltip: {
+                        mode: 'index' as const,
+                        intersect: false,
+                      },
+                    },
+                    interaction: {
+                      mode: 'nearest' as const,
+                      axis: 'x' as const,
+                      intersect: false,
+                    },
+                    scales: {
+                      x: {
+                        title: {
+                          display: true,
+                          text: 'Waktu',
+                        },
+                      },
+                      y: {
+                        title: {
+                          display: true,
+                          text: 'Penggunaan (%) / (MB)',
+                        },
+                        beginAtZero: true,
+                      },
+                    },
+                  }}
+                />
+              )}
+            </div>
+
             <div className="flex justify-end">
               <button
                 onClick={closeDetailModal}
@@ -249,7 +395,6 @@ const TableProcess: React.FC = () => {
               <thead>
                 <tr className="bg-[#F7F9FC] text-left dark:bg-dark-2">
                   {/* Hapus kolom ID */}
-                  {/* <th className="min-w-[100px] px-4 py-4 font-medium text-dark dark:text-white">ID</th> */}
                   <th className="min-w-[200px] px-4 py-4 font-medium text-dark dark:text-white sticky top-0 bg-[#F7F9FC] dark:bg-dark-2 z-10">
                     Nama Proses
                   </th>
@@ -270,10 +415,6 @@ const TableProcess: React.FC = () => {
               <tbody>
                 {processes.map((process) => (
                   <tr key={process.id}>
-                    {/* Hapus kolom ID */}
-                    {/* <td className="border-b border-[#eee] px-4 py-4 dark:border-dark-3">
-                      <p className="text-dark dark:text-white">{process.id}</p>
-                    </td> */}
                     {/* Nama Proses */}
                     <td className="border-b border-[#eee] px-4 py-4 dark:border-dark-3">
                       <p className="text-dark dark:text-white">{process.name}</p>
@@ -325,4 +466,4 @@ const TableProcess: React.FC = () => {
   );
 };
 
-export default TableProcess;
+export default ProcessChart;
