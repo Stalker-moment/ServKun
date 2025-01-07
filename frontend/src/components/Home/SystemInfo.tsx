@@ -16,12 +16,12 @@ import {
 } from "react-icons/fa";
 import { FiCpu } from "react-icons/fi";
 import { IconContext } from "react-icons";
-import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
-import { Bar } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
 import useIsDarkMode from "@/hooks/UseIsDarkMode";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Filler, Title, Tooltip, Legend);
 
 interface Disk {
   id: number;
@@ -265,24 +265,33 @@ const SystemInfo: React.FC = () => {
     });
   };
 
-  // Data dan opsi untuk Chart.js
+  // Data dan opsi untuk Chart.js (Area Chart)
   const chartData = {
     labels: memoryChartData.TimeChart,
     datasets: [
       {
         label: 'Total RAM (GB)',
         data: memoryChartData.TotalRAM,
-        backgroundColor: 'rgba(75, 192, 192, 0.6)', // Warna untuk Total RAM
+        borderColor: 'rgba(75, 192, 192, 1)', // Warna untuk Total RAM
+        backgroundColor: 'rgba(75, 192, 192, 0.2)', // Warna latar belakang
+        fill: true,
+        tension: 0.4,
       },
       {
         label: 'Used RAM (GB)',
         data: memoryChartData.UsedRAM,
-        backgroundColor: 'rgba(255, 99, 132, 0.6)', // Warna untuk Used RAM
+        borderColor: 'rgba(255, 99, 132, 1)', // Warna untuk Used RAM
+        backgroundColor: 'rgba(255, 99, 132, 0.2)', // Warna latar belakang
+        fill: true,
+        tension: 0.4,
       },
       {
         label: 'Available RAM (GB)',
         data: memoryChartData.AvailableRAM,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)', // Warna untuk Available RAM
+        borderColor: 'rgba(54, 162, 235, 1)', // Warna untuk Available RAM
+        backgroundColor: 'rgba(54, 162, 235, 0.2)', // Warna latar belakang
+        fill: true,
+        tension: 0.4,
       },
     ],
   };
@@ -338,6 +347,11 @@ const SystemInfo: React.FC = () => {
       <div className={styles.container}>
         {systemInfo ? (
           <>
+            {/* Tombol Toggle Tema */}
+            <button onClick={() => document.documentElement.classList.toggle("dark")} className={styles.themeToggle}>
+              Switch to {isDarkMode ? 'Light' : 'Dark'} Mode
+            </button>
+
             <h1 className={styles.title}>System Information</h1>
             <div className={styles.gridContainer}>
               {/* Basic Information */}
@@ -399,7 +413,7 @@ const SystemInfo: React.FC = () => {
                     <div className={styles.progressBar}>
                       <div 
                         className={styles.progressFill} 
-                        style={{ width: `${getRamUsage()}%`, backgroundColor: isDarkMode ? '#4caf50' : '#4caf50' }} // Bisa disesuaikan lebih lanjut
+                        style={{ width: `${getRamUsage()}%`, backgroundColor: isDarkMode ? '#4caf50' : '#4caf50' }} // Warna progress dapat disesuaikan
                       ></div>
                     </div>
                   </div>
@@ -519,7 +533,7 @@ const SystemInfo: React.FC = () => {
                   <button className={styles.closeButton} onClick={closeModal}>&times;</button>
                   <h2>Memory Usage Chart</h2>
                   {memoryChartData.TimeChart.length > 0 ? (
-                    <Bar data={chartData} options={chartOptions} />
+                    <Line data={chartData} options={chartOptions} />
                   ) : (
                     <p>Loading chart data...</p>
                   )}
