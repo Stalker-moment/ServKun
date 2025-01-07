@@ -18,7 +18,7 @@ async function sendProcessChart(processName) {
             throw new Error("Nama proses tidak boleh kosong.");
         }
 
-        // Ambil entri Process yang memiliki nama yang ditentukan, diurutkan berdasarkan createdAt ascending
+        // Ambil entri Process yang memiliki nama yang ditentukan, diurutkan berdasarkan createdAt descending dan dibatasi 15
         const processLogs = await prisma.process.findMany({
             where: {
                 name: {
@@ -27,8 +27,9 @@ async function sendProcessChart(processName) {
                 },
             },
             orderBy: {
-                createdAt: 'asc', // Urutkan berdasarkan waktu pembuatan
+                createdAt: 'desc', // Urutkan berdasarkan waktu pembuatan descending
             },
+            take: 15, // Ambil hanya 15 data terbaru
         });
 
         // Proses data menjadi format yang diinginkan
@@ -38,18 +39,11 @@ async function sendProcessChart(processName) {
             Memory: [],
         };
 
-        processLogs.forEach(log => {
+        processLogs.reverse().forEach(log => {
             data.TimeChart.push(format(log.createdAt, 'HH:mm:ss')); // Format waktu
             data.CPUUsage.push(log.cpuUsage); // Tambahkan CPU Usage
             data.Memory.push(log.memory); // Tambahkan Memory Usage
         });
-
-        // Filter data untuk hanya 15 data terbaru
-        if (data.TimeChart.length > 15) {
-            data.TimeChart = data.TimeChart.slice(-15);
-            data.CPUUsage = data.CPUUsage.slice(-15);
-            data.Memory = data.Memory.slice(-15);
-        }
 
         return data;
 
