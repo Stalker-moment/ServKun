@@ -40,6 +40,7 @@ import handleDataCoolerChart from "./sockets/dataCoolerChart.js";
 import handleDataProcess from "./sockets/dataProcess.js";
 import handleDataProcessByName from "./sockets/dataProcessByName.js";
 import handleDataProcessChart from "./sockets/dataProcessChart.js";
+import handleDataMemoryChart from "./sockets/dataMemoryChart.js";
 
 // Import Function
 import getAndSaveAllSystemInfo from "./functions/getSystems.js";
@@ -112,6 +113,7 @@ wss.on("connection", (ws, req) => {
     "/dataProcess": handleDataProcess,
     "/findProcess": handleDataProcessByName,
     "/ChartProcess": handleDataProcessChart,
+    "/ChartMemory": handleDataMemoryChart,
   };
 
   // Loop through routes and check if the request URL matches
