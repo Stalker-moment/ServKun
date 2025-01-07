@@ -18,6 +18,11 @@ import {
 } from "react-icons/fa";
 import { FiCpu } from "react-icons/fi";
 import { IconContext } from "react-icons";
+import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
+import { Line } from 'react-chartjs-2';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 interface Disk {
   id: number;
@@ -77,12 +82,31 @@ interface SystemInfoData {
   processCount: number;
 }
 
+interface MemoryChartData {
+  TimeChart: string[];
+  TotalRAM: number[];
+  UsedRAM: number[];
+  AvailableRAM: number[];
+}
+
 const SystemInfo: React.FC = () => {
   const [systemInfo, setSystemInfo] = useState<SystemInfoData | null>(null);
   const [userAuth, setUserAuth] = useState<string>("");
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectAttemptsRef = useRef<number>(0);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // State untuk Modal dan Chart
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const [memoryChartData, setMemoryChartData] = useState<MemoryChartData>({
+    TimeChart: [],
+    TotalRAM: [],
+    UsedRAM: [],
+    AvailableRAM: [],
+  });
+  const memoryWsRef = useRef<WebSocket | null>(null);
+  const memoryReconnectAttemptsRef = useRef<number>(0);
+  const memoryReconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fungsi untuk menghubungkan WebSocket dengan mekanisme auto-reconnect
   const connectWebSocket = useCallback(() => {
@@ -107,21 +131,61 @@ const SystemInfo: React.FC = () => {
       }
     };
 
-    ws.onerror = (error: Event) => {
-      console.error("WebSocket error:", error);
-      // WebSocket akan ditutup dan reconnect akan dilakukan di onclose
+    // ws.onerror = (error: Event) => {
+    //   console.error("WebSocket error:", error);
+    //   // WebSocket akan ditutup dan reconnect akan dilakukan di onclose
+    // };
+
+    // ws.onclose = (event: CloseEvent) => {
+    //   console.log("WebSocket connection closed:", event);
+    //   // Auto-reconnect dengan delay eksponensial hingga maksimal 30 detik
+    //   const timeout = Math.min(30000, 1000 * 2 ** reconnectAttemptsRef.current); // Max 30 detik
+    //   console.log(`Attempting to reconnect in ${timeout / 1000} seconds...`);
+    //   reconnectTimeoutRef.current = setTimeout(() => {
+    //     reconnectAttemptsRef.current += 1;
+    //     connectWebSocket();
+    //   }, timeout);
+    // };
+  }, [userAuth]);
+
+  // Fungsi untuk menghubungkan WebSocket Chart Memory
+  const connectMemoryWebSocket = useCallback(() => {
+    if (!userAuth) return;
+
+    const wsUrl = `wss://${process.env.NEXT_PUBLIC_HTTPS_API_URL}/ChartMemory?token=${userAuth}`;
+    const ws = new WebSocket(wsUrl);
+    memoryWsRef.current = ws;
+
+    ws.onopen = () => {
+      console.log("Memory WebSocket connection established.");
+      memoryReconnectAttemptsRef.current = 0; // Reset rekoneksi saat berhasil terhubung
     };
 
-    ws.onclose = (event: CloseEvent) => {
-      console.log("WebSocket connection closed:", event);
-      // Auto-reconnect dengan delay terus-menerus
-      const timeout = Math.min(30000, 1000 * 2 ** reconnectAttemptsRef.current); // Max 30 detik
-      console.log(`Attempting to reconnect in ${timeout / 1000} seconds...`);
-      reconnectTimeoutRef.current = setTimeout(() => {
-        reconnectAttemptsRef.current += 1;
-        connectWebSocket();
-      }, timeout);
+    ws.onmessage = (event: MessageEvent) => {
+      try {
+        const data: MemoryChartData = JSON.parse(event.data);
+        console.log("Memory chart data received:", data); // Tambahkan log ini
+        setMemoryChartData(data);
+      } catch (error) {
+        console.error("Error parsing Memory WebSocket data:", error);
+      }
     };
+
+    // ws.onerror = (error: Event) => {
+    //   console.error("Memory WebSocket error:", error);
+    //   // WebSocket akan ditutup dan reconnect akan dilakukan di onclose
+    // };
+
+    // ws.onclose = (event: CloseEvent) => {
+    //   console.log("Memory WebSocket connection closed:", event);
+    //   // Auto-reconnect dengan delay eksponensial hingga maksimal 30 detik
+    //   const timeout = Math.min(30000, 1000 * 2 ** memoryReconnectAttemptsRef.current); // Max 30 detik
+    //   console.log(`Attempting to reconnect Memory WebSocket in ${timeout / 1000} seconds...`);
+    //   memoryReconnectTimeoutRef.current = setTimeout(() => {
+    //     memoryReconnectAttemptsRef.current += 1;
+    //     connectMemoryWebSocket();
+    //   }, timeout);
+    // };
   }, [userAuth]);
 
   // Ambil userAuth dari cookie saat komponen dimuat
@@ -147,8 +211,15 @@ const SystemInfo: React.FC = () => {
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
       }
+      // Cleanup Memory WebSocket jika ada
+      if (memoryWsRef.current) {
+        memoryWsRef.current.close();
+      }
+      if (memoryReconnectTimeoutRef.current) {
+        clearTimeout(memoryReconnectTimeoutRef.current);
+      }
     };
-  }, [userAuth, connectWebSocket]);
+  }, [userAuth, connectWebSocket, connectMemoryWebSocket]);
 
   // Format tanggal
   const formatDate = (dateString: string) => {
@@ -168,6 +239,68 @@ const SystemInfo: React.FC = () => {
       return systemInfo.cpuTemperature;
     }
     return "N/A";
+  };
+
+  // Fungsi untuk membuka modal dan menghubungkan WebSocket Memory
+  const openModal = () => {
+    setIsModalOpen(true);
+    connectMemoryWebSocket();
+  };
+
+  // Fungsi untuk menutup modal dan memutuskan WebSocket Memory
+  const closeModal = () => {
+    setIsModalOpen(false);
+    if (memoryWsRef.current) {
+      memoryWsRef.current.close();
+    }
+    if (memoryReconnectTimeoutRef.current) {
+      clearTimeout(memoryReconnectTimeoutRef.current);
+    }
+    // Reset chart data jika diperlukan
+    setMemoryChartData({
+      TimeChart: [],
+      TotalRAM: [],
+      UsedRAM: [],
+      AvailableRAM: [],
+    });
+  };
+
+  // Data dan opsi untuk Chart.js
+  const chartData = {
+    labels: memoryChartData.TimeChart,
+    datasets: [
+      {
+        label: 'Total RAM (GB)',
+        data: memoryChartData.TotalRAM,
+        borderColor: 'rgba(75,192,192,1)',
+        fill: false,
+      },
+      {
+        label: 'Used RAM (GB)',
+        data: memoryChartData.UsedRAM,
+        borderColor: 'rgba(255,99,132,1)',
+        fill: false,
+      },
+      {
+        label: 'Available RAM (GB)',
+        data: memoryChartData.AvailableRAM,
+        borderColor: 'rgba(54, 162, 235, 1)',
+        fill: false,
+      },
+    ],
+  };
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top' as const,
+      },
+      title: {
+        display: true,
+        text: 'Memory Usage Chart',
+      },
+    },
   };
 
   return (
@@ -227,7 +360,7 @@ const SystemInfo: React.FC = () => {
               </div>
 
               {/* Memory Information */}
-              <div className={`${styles.card} ${styles.memoryInfo}`}>
+              <div className={`${styles.card} ${styles.memoryInfo}`} onClick={openModal} style={{ cursor: 'pointer' }}>
                 <FaMemory className={styles.cardIcon} />
                 <h2>Memory</h2>
                 <div className={styles.info}>
@@ -345,6 +478,21 @@ const SystemInfo: React.FC = () => {
                 </div>
               </div>
             </div>
+
+            {/* Modal untuk Memory Chart */}
+            {isModalOpen && (
+              <div className={styles.modalOverlay} onClick={closeModal}>
+                <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
+                  <button className={styles.closeButton} onClick={closeModal}>&times;</button>
+                  <h2>Memory Usage Chart</h2>
+                  {memoryChartData.TimeChart.length > 0 ? (
+                    <Line data={chartData} options={chartOptions} />
+                  ) : (
+                    <p>Loading chart data...</p>
+                  )}
+                </div>
+              </div>
+            )}
           </>
         ) : (
           <div className={styles.loading}>
