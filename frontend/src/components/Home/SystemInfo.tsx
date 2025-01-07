@@ -265,6 +265,13 @@ const SystemInfo: React.FC = () => {
     });
   };
 
+  // Fungsi untuk toggle tema
+  const toggleTheme = () => {
+    if (typeof window !== "undefined") {
+      document.documentElement.classList.toggle("dark");
+    }
+  };
+
   // Data dan opsi untuk Chart.js (Area Chart)
   const chartData = {
     labels: memoryChartData.TimeChart,
@@ -348,7 +355,7 @@ const SystemInfo: React.FC = () => {
         {systemInfo ? (
           <>
             {/* Tombol Toggle Tema */}
-            <button onClick={() => document.documentElement.classList.toggle("dark")} className={styles.themeToggle}>
+            <button onClick={toggleTheme} className={styles.themeToggle}>
               Switch to {isDarkMode ? 'Light' : 'Dark'} Mode
             </button>
 
@@ -413,7 +420,7 @@ const SystemInfo: React.FC = () => {
                     <div className={styles.progressBar}>
                       <div 
                         className={styles.progressFill} 
-                        style={{ width: `${getRamUsage()}%`, backgroundColor: isDarkMode ? '#4caf50' : '#4caf50' }} // Warna progress dapat disesuaikan
+                        style={{ width: `${getRamUsage()}%` }}
                       ></div>
                     </div>
                   </div>
@@ -429,11 +436,8 @@ const SystemInfo: React.FC = () => {
                     <span>Battery Level: {systemInfo.batteryLevel}%</span>
                     <div className={styles.progressBar}>
                       <div 
-                        className={styles.progressFill} 
-                        style={{ 
-                          width: `${systemInfo.batteryLevel}%`, 
-                          backgroundColor: systemInfo.batteryLevel > 20 ? '#4caf50' : '#f44336' 
-                        }}
+                        className={`${styles.progressFill} ${systemInfo.batteryLevel <= 20 ? 'backgroundColor' : ''}`} 
+                        style={{ width: `${systemInfo.batteryLevel}%` }}
                       ></div>
                     </div>
                   </div>
@@ -532,11 +536,13 @@ const SystemInfo: React.FC = () => {
                 <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
                   <button className={styles.closeButton} onClick={closeModal}>&times;</button>
                   <h2>Memory Usage Chart</h2>
-                  {memoryChartData.TimeChart.length > 0 ? (
-                    <Line data={chartData} options={chartOptions} />
-                  ) : (
-                    <p>Loading chart data...</p>
-                  )}
+                  <div className={styles.chartContainer}>
+                    {memoryChartData.TimeChart.length > 0 ? (
+                      <Line data={chartData} options={chartOptions} />
+                    ) : (
+                      <p>Loading chart data...</p>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
