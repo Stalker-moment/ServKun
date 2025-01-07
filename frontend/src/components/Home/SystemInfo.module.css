@@ -1,3 +1,7 @@
+/* components/SystemInfo.module.css */
+
+/* Variabel CSS untuk Light dan Dark Mode sudah dipindahkan ke globals.css */
+
 /* Container Styles */
 .container {
   padding: 40px 20px;
@@ -184,30 +188,7 @@
   height: 400px;
 }
 
-/* Tombol Toggle Tema */
-.themeToggle {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  background-color: var(--background-color);
-  color: var(--text-color);
-  border: 1px solid #ccc;
-  padding: 10px 15px;
-  border-radius: 5px;
-  cursor: pointer;
-  z-index: 1001;
-  transition: background-color 0.3s, color 0.3s;
-}
-
-.dark .themeToggle {
-  background-color: var(--text-color);
-  color: var(--background-color);
-}
-
-.themeToggle:hover {
-  background-color: var(--text-color);
-  color: var(--background-color);
-}
+/* Tombol Toggle Tema dihapus */
 
 /* Responsive Styles */
 @media (max-width: 768px) {

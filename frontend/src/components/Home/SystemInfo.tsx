@@ -265,12 +265,12 @@ const SystemInfo: React.FC = () => {
     });
   };
 
-  // Fungsi untuk toggle tema
-  const toggleTheme = () => {
-    if (typeof window !== "undefined") {
-      document.documentElement.classList.toggle("dark");
-    }
-  };
+  // **Hapus fungsi toggleTheme karena tidak lagi dibutuhkan**
+  // const toggleTheme = () => {
+  //   if (typeof window !== "undefined") {
+  //     document.documentElement.classList.toggle("dark");
+  //   }
+  // };
 
   // Data dan opsi untuk Chart.js (Area Chart)
   const chartData = {
@@ -354,10 +354,10 @@ const SystemInfo: React.FC = () => {
       <div className={styles.container}>
         {systemInfo ? (
           <>
-            {/* Tombol Toggle Tema */}
-            <button onClick={toggleTheme} className={styles.themeToggle}>
+            {/* **Hapus Tombol Toggle Tema** */}
+            {/* <button onClick={toggleTheme} className={styles.themeToggle}>
               Switch to {isDarkMode ? 'Light' : 'Dark'} Mode
-            </button>
+            </button> */}
 
             <h1 className={styles.title}>System Information</h1>
             <div className={styles.gridContainer}>
@@ -436,7 +436,7 @@ const SystemInfo: React.FC = () => {
                     <span>Battery Level: {systemInfo.batteryLevel}%</span>
                     <div className={styles.progressBar}>
                       <div 
-                        className={`${styles.progressFill} ${systemInfo.batteryLevel <= 20 ? 'backgroundColor' : ''}`} 
+                        className={`${styles.progressFill} ${systemInfo.batteryLevel <= 20 ? styles.backgroundColor : ''}`} 
                         style={{ width: `${systemInfo.batteryLevel}%` }}
                       ></div>
                     </div>
