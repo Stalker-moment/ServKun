@@ -11,18 +11,17 @@ import {
   FaMicrochip, 
   FaNetworkWired, 
   FaCogs, 
-  FaTemperatureHigh,
   FaServer,
   FaWifi,
-  FaLaptop,
 } from "react-icons/fa";
 import { FiCpu } from "react-icons/fi";
 import { IconContext } from "react-icons";
-import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import useIsDarkMode from "@/hooks/UseIsDarkMode";
 
 // Register Chart.js components
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 interface Disk {
   id: number;
@@ -90,6 +89,7 @@ interface MemoryChartData {
 }
 
 const SystemInfo: React.FC = () => {
+  const isDarkMode = useIsDarkMode(); // Menggunakan hook untuk mendeteksi tema
   const [systemInfo, setSystemInfo] = useState<SystemInfoData | null>(null);
   const [userAuth, setUserAuth] = useState<string>("");
   const wsRef = useRef<WebSocket | null>(null);
@@ -272,20 +272,17 @@ const SystemInfo: React.FC = () => {
       {
         label: 'Total RAM (GB)',
         data: memoryChartData.TotalRAM,
-        borderColor: 'rgba(75,192,192,1)',
-        fill: false,
+        backgroundColor: 'rgba(75, 192, 192, 0.6)', // Warna untuk Total RAM
       },
       {
         label: 'Used RAM (GB)',
         data: memoryChartData.UsedRAM,
-        borderColor: 'rgba(255,99,132,1)',
-        fill: false,
+        backgroundColor: 'rgba(255, 99, 132, 0.6)', // Warna untuk Used RAM
       },
       {
         label: 'Available RAM (GB)',
         data: memoryChartData.AvailableRAM,
-        borderColor: 'rgba(54, 162, 235, 1)',
-        fill: false,
+        backgroundColor: 'rgba(54, 162, 235, 0.6)', // Warna untuk Available RAM
       },
     ],
   };
@@ -295,10 +292,43 @@ const SystemInfo: React.FC = () => {
     plugins: {
       legend: {
         position: 'top' as const,
+        labels: {
+          color: isDarkMode ? '#ffffff' : '#000000', // Sesuaikan warna legenda
+        },
       },
       title: {
         display: true,
         text: 'Memory Usage Chart',
+        color: isDarkMode ? '#ffffff' : '#000000', // Sesuaikan warna judul
+      },
+      tooltip: {
+        callbacks: {
+          label: function(context: any) {
+            return `${context.dataset.label}: ${context.parsed.y} GB`;
+          }
+        },
+        titleColor: isDarkMode ? '#ffffff' : '#000000',
+        bodyColor: isDarkMode ? '#ffffff' : '#000000',
+        backgroundColor: isDarkMode ? 'rgba(0,0,0,0.7)' : 'rgba(255,255,255,0.8)',
+      },
+    },
+    scales: {
+      x: {
+        ticks: {
+          color: isDarkMode ? '#ffffff' : '#000000', // Sesuaikan warna label sumbu x
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', // Sesuaikan warna grid sumbu x
+        },
+      },
+      y: {
+        ticks: {
+          color: isDarkMode ? '#ffffff' : '#000000', // Sesuaikan warna label sumbu y
+        },
+        grid: {
+          color: isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)', // Sesuaikan warna grid sumbu y
+        },
+        beginAtZero: true,
       },
     },
   };
@@ -369,7 +399,7 @@ const SystemInfo: React.FC = () => {
                     <div className={styles.progressBar}>
                       <div 
                         className={styles.progressFill} 
-                        style={{ width: `${getRamUsage()}%` }}
+                        style={{ width: `${getRamUsage()}%`, backgroundColor: isDarkMode ? '#4caf50' : '#4caf50' }} // Bisa disesuaikan lebih lanjut
                       ></div>
                     </div>
                   </div>
@@ -386,7 +416,10 @@ const SystemInfo: React.FC = () => {
                     <div className={styles.progressBar}>
                       <div 
                         className={styles.progressFill} 
-                        style={{ width: `${systemInfo.batteryLevel}%`, backgroundColor: systemInfo.batteryLevel > 20 ? '#4caf50' : '#f44336' }}
+                        style={{ 
+                          width: `${systemInfo.batteryLevel}%`, 
+                          backgroundColor: systemInfo.batteryLevel > 20 ? '#4caf50' : '#f44336' 
+                        }}
                       ></div>
                     </div>
                   </div>
@@ -486,7 +519,7 @@ const SystemInfo: React.FC = () => {
                   <button className={styles.closeButton} onClick={closeModal}>&times;</button>
                   <h2>Memory Usage Chart</h2>
                   {memoryChartData.TimeChart.length > 0 ? (
-                    <Line data={chartData} options={chartOptions} />
+                    <Bar data={chartData} options={chartOptions} />
                   ) : (
                     <p>Loading chart data...</p>
                   )}
